@@ -1,34 +1,34 @@
 import React from 'react'
 import './post.css'
+import { Link } from 'react-router-dom'
 
-export default function Post() {
+export default function Post({post}) {
+    const PF = 'http://localhost:5000/images/'
   return (
     <div className='post'>
+    {post.photo && (
         <img
             className='postImg'
-            src='https://images.pexels.com/photos/20787/pexels-photo.jpg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940'
+            src={PF + post.photo}
             alt=''
         />
+    )}
         <div className='postInfo'>
             <div className='postCats'>
-                <span className='postCat'>Music</span>
-                <span className='postCat'>Life</span>
+            {post.categories.map((c) => (
+                <span className='postCat'>{c.name}</span>
+        ))}
             </div>
+            <Link to={`/post/${post._id}`} className='link'>
             <span className='postTitle'>
-                Lorem ipsum dolor sit amet.
+                {post.title}
             </span>
+            </Link>
             <hr/>
-            <span className='postDate'>1 hour ago</span>
+            <span className='postDate'>{new Date(post.createdAt).toDateString}</span>
         </div>
         <p className='postDesc'>
-            Lorem ipsum dolor sit amet consectetur adipisicing elit.
-            Quisquam, voluptatum. Quisquam, voluptatum. Quisquam, voluptatum.
-            Quisquam, voluptatum. Quisquam, voluptatum. Quisquam, voluptatum.
-            Quisquam, voluptatum. Quisquam, voluptatum. Quisquam, voluptatum.
-            Quisquam, voluptatum. Quisquam, voluptatum. Quisquam, voluptatum.
-            Quisquam, voluptatum. Quisquam, voluptatum. Quisquam, voluptatum.
-            Quisquam, voluptatum. Quisquam, voluptatum. Quisquam, voluptatum.
-            Quisquam, voluptatum. Quisquam, voluptatum.
+           {post.desc}
         </p>
     </div>
   )

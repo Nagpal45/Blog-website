@@ -1,30 +1,86 @@
-import React from 'react'
+import React, { useContext, useEffect, useState } from 'react'
 import './singlePost.css'
+import { Link, useLocation } from 'react-router-dom'
+import axios from 'axios'
+import { Context } from '../../context/Context'
 
 export default function SinglePost() {
+    const {user} = useContext(Context)
+    const PF = 'http://localhost:5000/images/'
+    const location = useLocation()
+    const path = location.pathname.split('/')[2]
+    const [post, setPost] = useState({})
+    const [title, setTitle] = useState('')
+    const [desc, setDesc] = useState('')
+    const [updateMode, setUpdateMode] = useState(false)
+
+    
+    useEffect(() => {
+        const getPost = async () => {
+            const res = await axios.get('/posts/' + path)
+            setPost(res.data)
+            setTitle(res.data.title)
+            setDesc(res.data.desc)
+        }
+        getPost()
+    }, [path])
+
+    const handleDelete = async () => {
+        try {
+            await axios.delete(`/posts/${post._id}`, {
+                data: {username: user.username}
+            })
+            window.location.replace('/')
+        } catch (err) {
+            
+        }
+    }
+
+    const handleUpdate = async () => {
+        try {
+            await axios.put(`/posts/${post._id}`, {
+                username: user.username, title, desc
+            })
+            setUpdateMode(false)
+        } catch (err) {
+
+        } 
+    }
+
   return (
     <div className='singlePost'>
         <div className="singlePostWrapper">
-            <img src="https://images.pexels.com/photos/20787/pexels-photo.jpg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940" alt="" className="singlePostImg" />
+        {post.photo && (
+            <img src={PF + post.photo} alt="" className="singlePostImg" />
+           )}
+           {updateMode ? <input type="text" value={title} className="singlePostTitleInput" autoFocus onChange={(e)=> setTitle(e.target.value)} /> : (
+
             <h1 className="singlePostTitle">
-                Lorem ipsum dolor sit amet.
+                {post.title}
+                {post.username === user?.username && (
             <div className="singlePostEdit">
-                <i className="singlePostIcon far fa-edit"></i>
-                <i className="singlePostIcon far fa-trash-alt"></i>
+                <i className="singlePostIcon far fa-edit" onClick={()=> setUpdateMode(true)}></i>
+                <i className="singlePostIcon far fa-trash-alt" onClick={handleDelete}></i>
             </div>   
+                    )}
             </h1>
+              )}
             <div className="singlePostInfo">
-                <span className="singlePostAuthor">Author: <b>Phunsuk</b></span>
-                <span className="singlePostDate">1 hour ago</span>
+                <span className="singlePostAuthor">Author: 
+                <Link to={`/?user=${post.username}`} className='link'>
+                <b>{post.username}</b>
+                </Link>
+                </span>
+                <span className="singlePostDate">{new Date(post.createdAt).toDateString}</span>
             </div>
+            {updateMode ? <textarea className="singlePostDescInput" value={desc} onChange={(e)=> setDesc(e.target.value)} /> : (
             <p className="singlePostDesc">
-                Lorem ipsum dolor sit amet, consectetur adipisicing elit. Voluptatibus aliquid maxime velit! Magni, dolores aut veritatis nulla ipsa nihil temporibus accusamus ex eveniet molestias at, fugit mollitia corrupti, debitis eaque.
-                Lorem ipsum dolor sit amet consectetur adipisicing elit. Hic obcaecati aspernatur, accusantium officia nobis culpa, dolores nostrum, quidem tempora ea ut veniam cupiditate? Cupiditate laudantium facere, molestiae quas voluptas deserunt.
-                Lorem ipsum dolor sit amet consectetur adipisicing elit. Minima rem esse quis nulla magni tempora architecto, iste eaque sed voluptas cum hic odit fuga! Voluptate illum voluptates ratione exercitationem delectus!
-                Lorem ipsum dolor sit amet consectetur adipisicing elit. Pariatur fugiat tempora architecto saepe reprehenderit reiciendis quisquam odit tenetur eum culpa ut repudiandae ea voluptas numquam quasi, ab ratione dolorem beatae!
-                Lorem ipsum, dolor sit amet consectetur adipisicing elit. Velit ipsa sed enim iusto! At corrupti suscipit rem aspernatur. Inventore magni similique id rem expedita dolorem fugiat voluptate quibusdam aspernatur cumque.
-                Lorem ipsum dolor sit amet consectetur adipisicing elit. Molestias quod sunt, ea architecto perferendis maxime facere beatae est recusandae labore tempore ex. Inventore hic velit totam molestiae explicabo debitis doloremque.
+                {post.desc}
             </p>
+                )}
+            {updateMode && (
+                <button className="singlePostButton" onClick={handleUpdate}>Update</button>
+            )}
         </div> 
     </div>
   )
